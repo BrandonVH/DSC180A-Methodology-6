@@ -54,7 +54,7 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     out = reindex_to_calendar(df.sort_values("dteday").reset_index(drop=True)).copy()
 
     # --- Calendar: known in advance, so it cannot leak -------------------
-    out["dayofweek"] = out.dteday.dt.dayofweek
+    out["dayofweek"] = out.dteday.dt.day_of_week
     out["is_weekend"] = (out.dayofweek >= 5).astype(int)
     out["is_holiday"] = (out.holiday == "Y").astype(int)
     out["is_workday"] = (out.workday == "Y").astype(int)
@@ -72,8 +72,9 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     # without it, cnt_roll_7 would contain today's count. -----------------
     # If you add a longer lag, raise LAG_WARMUP in src/config.py.
     out["cnt_lag_1"] = out[TARGET].shift(1)
-    out["cnt_lag_7"] = out[TARGET].shift(LAG_WARMUP)
-    out["cnt_roll_7"] = out[TARGET].shift(1).rolling(LAG_WARMUP).mean()
+    out["cnt_lag_7"] = out[TARGET].shift(7)
+    out["cnt_roll_7"] = out[TARGET].shift(1).rolling(7).mean()
+    out["cnt_roll_14"] = out[TARGET].shift(1).rolling(14).mean()
 
     return out.dropna().reset_index(drop=True)
 
