@@ -57,6 +57,16 @@ def test_rolling_mean_excludes_today(feats):
         assert feats.set_index("dteday").cnt_roll_7[date] == pytest.approx(expected)
 
 
+def test_14_day_rolling_mean_excludes_today(feats):
+    """cnt_roll_14 at 2012-01-15 is the mean of 2012-01-01 through 2012-01-14."""
+    by_date = feats.set_index("dteday")[TARGET]
+    date = pd.Timestamp("2012-01-15")
+    window = [date - pd.Timedelta(days=k) for k in range(1, 15)]
+    assert all(d in by_date.index for d in window)
+    expected = sum(by_date[d] for d in window) / 14
+    assert feats.set_index("dteday").cnt_roll_14[date] == pytest.approx(expected)
+
+
 def test_no_missing_values(feats):
     assert feats[feature_columns(feats)].isna().sum().sum() == 0
 
