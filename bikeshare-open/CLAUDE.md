@@ -20,6 +20,10 @@ rides) from calendar, weather, and lagged-demand features.
 - Any new lag or rolling feature must be built on a gap-free calendar
   index (`src.features.reindex_to_calendar`) and must `.shift(1)` before
   it aggregates. Add a test for it in `tests/test_leakage.py`.
+- The `cnt_roll_14` feature is a 14-day target rolling mean shifted by one
+  calendar day; keep `LAG_WARMUP` at 14 or raise it for longer history.
+- Use the `/ablation` skill to remove a feature, retrain, and record the
+  validation delta before changing the report.
 - Report the mean baseline **and** the persistence baseline (yesterday's
   count) alongside every model. A negative R^2 is a finding, not a bug
   to hide.

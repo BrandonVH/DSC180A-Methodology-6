@@ -3,6 +3,7 @@
 Run: python -m src.ingest
 """
 import sys
+import hashlib
 import urllib.request
 
 import pandas as pd
@@ -11,6 +12,7 @@ from src.config import DATA_URL, RAW
 
 EXPECTED_MIN_ROWS = 700
 REQUIRED_COLS = {"dteday", "cnt", "casual", "registered", "temp", "hum", "windspeed"}
+RAW_SHA256_PREFIX = "a6bed1577f6e4de5"
 
 
 def download(force: bool = False) -> None:
@@ -21,6 +23,12 @@ def download(force: bool = False) -> None:
 
 
 def load_raw() -> pd.DataFrame:
+    digest = hashlib.sha256(RAW.read_bytes()).hexdigest()
+    if not digest.startswith(RAW_SHA256_PREFIX):
+        raise ValueError(
+            f"raw data hash mismatch: got {digest[:16]}, "
+            f"expected prefix {RAW_SHA256_PREFIX}"
+        )
     df = pd.read_csv(RAW, parse_dates=["dteday"])
     missing = REQUIRED_COLS - set(df.columns)
     if missing:
